@@ -5,7 +5,9 @@
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+	xmlns:websocket="http://www.springframework.org/schema/websocket"
+	xsi:schemaLocation="http://www.springframework.org/schema/websocket http://www.springframework.org/schema/websocket/spring-websocket.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd">
@@ -18,13 +20,30 @@
 	<property name="suffix" value=".jsp" />
 	</bean>
 	
+	<!-- websocket handler -->
+	<websocket:handlers>
+		<websocket:mapping handler="echoHandler" path="/chat" />
+		<websocket:sockjs />
+	</websocket:handlers>
+	<bean id="echoHandler" class="com.green.user.controller.EchoHandler"></bean>
+	
 	<bean id="dataSource"
 		class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 		<property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
 		<property name="url" value="jdbc:oracle:thin:@localhost:1521:xe"></property>
-		<property name="username" value="SSP_DB"></property>
+		<property name="username" value="MUSCLEMUSEUM"></property>
 		<property name="password" value="1234"></property>
 	</bean>
+	
+	<!-- 스프링에서 기본으로 제공하는 multipartResolver는 CommonsMultipartResolver 이므로, 순수한
+	 multipartResolver를 사용하기 위해 빈 이름으로 "multipartResolver"를 등록해야함
+	  + 프로퍼티를 이용 최대 가능한 업로드 사이즈 지정함 -->
+	<!-- MultipartResolver 설정 -->
+    <!-- 최대 업로드 크기설정 100000000 : 100M -->
+    <bean id="multipartResolver" class ="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+          <property name="maxUploadSize" value="100000000" />   
+          <property name="maxInMemorySize" value="100000000" /> 
+    </bean>
 	
 	<!-- MyBatis와 Spring 연결을 위한 SqlSessionFactory 객체 사용
      	 DB연결 및 sql명령 실행을 담당-->
@@ -40,9 +59,18 @@
 	
 	<!-- css, js, img 사용 설정 -->
 	<mvc:resources location="/WEB-INF/resources/css/" mapping="/css/**"></mvc:resources>
-	<mvc:resources location="/WEB-INF/resources/css/" mapping="/js/**"></mvc:resources>
-	<mvc:resources location="/WEB-INF/resources/css/" mapping="/img/**"></mvc:resources>
+	<mvc:resources location="/WEB-INF/resources/js/" mapping="/js/**"></mvc:resources>
+	<mvc:resources location="/WEB-INF/resources/img/" mapping="/img/**"></mvc:resources>
+	<mvc:resources location="/WEB-INF/resources/user_photo/" mapping="/user_photo/**"></mvc:resources>
 	
+	
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
+	
+	<!-- jsonView 사용설정 -->
+	<bean class="org.springframework.web.servlet.view.BeanNameViewResolver">
+      <property name="order" value="0"/>
+    </bean>
+	<bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"/>
 	
 	<!-- <bean id="userDao"
 		class="com.green.basic.dao.impl.UserDaoImpl">
